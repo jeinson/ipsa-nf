@@ -113,6 +113,8 @@ if (params.genome =~ /.fa(sta)?$/) {
     .set { genomeChan }
 
   process genomeIndex {
+    afterScript 'rm -rf /tmp/nxf*'
+
     input:
     file("genome.fa") from genomeChan
 
@@ -136,6 +138,8 @@ if (params.genome =~ /.fa(sta)?$/) {
 
 if (params.annot =~ /.g[tf]f$/) {
   process txElements {
+    afterScript 'rm -rf /tmp/nxf*'
+
     input:
     file annotation from file(params.annot)
 
@@ -158,8 +162,7 @@ Channel
   .set { bams } 
 
 process preprocBams {
-  beforeScript 'export TMPDIR=$(mktemp -d)'
-  afterScript 'rm -rf $TMPDIR'
+  afterScript 'rm -rf /tmp/nxf*'
 
   input:
   set id, file(bam), readType, readStrand from bams
@@ -175,8 +178,7 @@ process preprocBams {
 }
 
 process sjcount {
-  beforeScript 'export TMPDIR=$(mktemp -d)'
-  afterScript 'rm -rf $TMPDIR'
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -218,8 +220,7 @@ process sjcount {
 }
 
 process aggregateSSC {
-  beforeScript 'export TMPDIR=$(mktemp -d)'
-  afterScript 'rm -rf $TMPDIR'
+  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -239,8 +240,7 @@ process aggregateSSC {
 }
 
 process aggregateSSJ {
-  beforeScript 'export TMPDIR=$(mktemp -d)'
-  afterScript 'rm -rf $TMPDIR'
+  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -282,7 +282,8 @@ process aggregateMex {
 }
 
 process annotate {
-  
+  afterScript 'rm -rf /tmp/nxf*'
+
   publishDir "${params.dir}/${endpoint}"
 
   input:
@@ -302,7 +303,8 @@ process annotate {
 }
 
 process chooseStrand {
-  
+  afterScript 'rm -rf /tmp/nxf*'
+
   publishDir "${params.dir}/${endpoint}"
 
   input:
@@ -335,6 +337,7 @@ if ( params.microexons ) {
 }
 
 process constrainSSC {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -353,6 +356,7 @@ process constrainSSC {
 }
 
 process constrainMex {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -371,6 +375,7 @@ process constrainMex {
 }
 
 process extractMex {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -389,6 +394,7 @@ process extractMex {
 }
 
 process sscA06 {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -408,6 +414,7 @@ process sscA06 {
 }
 
 process ssjA06 {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -457,6 +464,8 @@ if ( params.microexons ) {
 }
 
 process mergeTsvSSJ {
+  afterScript 'rm -rf /tmp/nxf*'
+
   publishDir "${params.dir}"
   
   input:
@@ -475,6 +484,8 @@ process mergeTsvSSJ {
 }
 
 process mergeTsvSSC {
+  afterScript 'rm -rf /tmp/nxf*'
+
   publishDir "${params.dir}"
   
   input:
@@ -493,6 +504,7 @@ process mergeTsvSSC {
 }
 
 process zeta {
+  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -512,6 +524,7 @@ process zeta {
 }
 
 process zetaMex {
+  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -549,6 +562,8 @@ if ( params.microexons ) {
 }
 
 process mergeGFFzeta {
+  afterScript 'rm -rf /tmp/nxf*'
+
   publishDir "${params.dir}"
   
   input:
@@ -568,6 +583,7 @@ process mergeGFFzeta {
 }
 
 process ssjTsv2bed {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -586,6 +602,7 @@ process ssjTsv2bed {
 }
 
 process sscTsv2bed {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -604,6 +621,7 @@ process sscTsv2bed {
 }
 
 process tsv2gff {
+  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
