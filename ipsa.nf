@@ -166,7 +166,6 @@ process preprocBams {
 
   script:
   prefix = bam.name.replace(/.bam/,'')
-  
   """
   export TMPDIR=$(mktemp -d)
   samtools view -F4 ${bam} | head -1 | awk '\$0=length(\$10)' | tr -d '\\n'
