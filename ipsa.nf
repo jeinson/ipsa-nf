@@ -158,6 +158,8 @@ Channel
   .set { bams } 
 
 process preprocBams {
+  beforeScript 'export TMPDIR=$(mktemp -d)'
+
   input:
   set id, file(bam), readType, readStrand from bams
 
@@ -167,13 +169,9 @@ process preprocBams {
   script:
   prefix = bam.name.replace(/.bam/,'')
   
-  beforeScript 'export TMPDIR=$(mktemp -d)'
-  
   """
   samtools view -F4 ${bam} | head -1 | awk '\$0=length(\$10)' | tr -d '\\n'
   """
-  
-  afterScript 'rm -rf $TMPDIR'
 }
 
 process sjcount {
