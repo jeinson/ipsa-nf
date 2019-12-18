@@ -158,6 +158,9 @@ Channel
   .set { bams } 
 
 process preprocBams {
+  beforeScript 'export TMPDIR=$(mktemp -d)'
+  afterScript 'rm -rf $TMPDIR'
+
   input:
   set id, file(bam), readType, readStrand from bams
 
@@ -166,16 +169,15 @@ process preprocBams {
 
   script:
   prefix = bam.name.replace(/.bam/,'')
-  
   """
-  export TMPDIR=$(mktemp -d)
   samtools view -F4 ${bam} | head -1 | awk '\$0=length(\$10)' | tr -d '\\n'
-  rm -rf $TMPDIR
   """
 }
 
 process sjcount {
-  
+  beforeScript 'export TMPDIR=$(mktemp -d)'
+  afterScript 'rm -rf $TMPDIR'
+
   publishDir "${params.dir}/${endpoint}"
 
   input:
@@ -216,6 +218,8 @@ process sjcount {
 }
 
 process aggregateSSC {
+  beforeScript 'export TMPDIR=$(mktemp -d)'
+  afterScript 'rm -rf $TMPDIR'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -235,6 +239,8 @@ process aggregateSSC {
 }
 
 process aggregateSSJ {
+  beforeScript 'export TMPDIR=$(mktemp -d)'
+  afterScript 'rm -rf $TMPDIR'
   
   publishDir "${params.dir}/${endpoint}"
 
