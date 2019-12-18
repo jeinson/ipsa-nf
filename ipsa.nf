@@ -138,7 +138,6 @@ if (params.genome =~ /.fa(sta)?$/) {
 
 if (params.annot =~ /.g[tf]f$/) {
   process txElements {
-    afterScript 'rm -rf /tmp/nxf*'
 
     input:
     file annotation from file(params.annot)
@@ -220,7 +219,6 @@ process sjcount {
 }
 
 process aggregateSSC {
-  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -240,7 +238,6 @@ process aggregateSSC {
 }
 
 process aggregateSSJ {
-  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -282,7 +279,6 @@ process aggregateMex {
 }
 
 process annotate {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -303,7 +299,6 @@ process annotate {
 }
 
 process chooseStrand {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -337,7 +332,6 @@ if ( params.microexons ) {
 }
 
 process constrainSSC {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -356,7 +350,6 @@ process constrainSSC {
 }
 
 process constrainMex {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -375,7 +368,6 @@ process constrainMex {
 }
 
 process extractMex {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -394,7 +386,6 @@ process extractMex {
 }
 
 process sscA06 {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -414,7 +405,6 @@ process sscA06 {
 }
 
 process ssjA06 {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -504,7 +494,6 @@ process mergeTsvSSC {
 }
 
 process zeta {
-  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -524,7 +513,6 @@ process zeta {
 }
 
 process zetaMex {
-  afterScript 'rm -rf /tmp/nxf*'
   
   publishDir "${params.dir}/${endpoint}"
 
@@ -583,7 +571,6 @@ process mergeGFFzeta {
 }
 
 process ssjTsv2bed {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -602,7 +589,6 @@ process ssjTsv2bed {
 }
 
 process sscTsv2bed {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
@@ -621,7 +607,6 @@ process sscTsv2bed {
 }
 
 process tsv2gff {
-  afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
 
