@@ -166,9 +166,14 @@ process preprocBams {
 
   script:
   prefix = bam.name.replace(/.bam/,'')
+  
+  beforeScript 'export TMPDIR=$(mktemp -d)'
+  
   """
   samtools view -F4 ${bam} | head -1 | awk '\$0=length(\$10)' | tr -d '\\n'
   """
+  
+  afterScript 'rm -rf $TMPDIR'
 }
 
 process sjcount {
