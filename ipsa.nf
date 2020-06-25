@@ -20,7 +20,11 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * This was edited by Jonah Einson so it takes the read length as a paramter, 
+ * and doesn't require the entire bam to be downloaded... 
  */
+
 
 // library imports
 import IPSA
@@ -113,8 +117,6 @@ if (params.genome =~ /.fa(sta)?$/) {
     .set { genomeChan }
 
   process genomeIndex {
-    afterScript 'rm -rf /tmp/nxf*'
-
     input:
     file("genome.fa") from genomeChan
 
@@ -138,7 +140,6 @@ if (params.genome =~ /.fa(sta)?$/) {
 
 if (params.annot =~ /.g[tf]f$/) {
   process txElements {
-
     input:
     file annotation from file(params.annot)
 
@@ -158,11 +159,10 @@ if (params.annot =~ /.g[tf]f$/) {
 
 Channel
   .from(IPSA.parseIndexFile(file(params.index)))
-  .set { bams } 
+  .set { bamsWreadLength } 
 
+/*
 process preprocBams {
-  afterScript 'rm -rf /tmp/nxf*'
-
   input:
   set id, file(bam), readType, readStrand from bams
 
@@ -175,10 +175,10 @@ process preprocBams {
   samtools view -F4 ${bam} | head -1 | awk '\$0=length(\$10)' | tr -d '\\n'
   """
 }
+*/
 
 process sjcount {
-  afterScript 'rm -rf /tmp/nxf*'
-
+  
   publishDir "${params.dir}/${endpoint}"
 
   input:
@@ -279,7 +279,7 @@ process aggregateMex {
 }
 
 process annotate {
-
+  
   publishDir "${params.dir}/${endpoint}"
 
   input:
@@ -299,7 +299,7 @@ process annotate {
 }
 
 process chooseStrand {
-
+  
   publishDir "${params.dir}/${endpoint}"
 
   input:
@@ -454,8 +454,6 @@ if ( params.microexons ) {
 }
 
 process mergeTsvSSJ {
-  afterScript 'rm -rf /tmp/nxf*'
-
   publishDir "${params.dir}"
   
   input:
@@ -474,8 +472,6 @@ process mergeTsvSSJ {
 }
 
 process mergeTsvSSC {
-  afterScript 'rm -rf /tmp/nxf*'
-
   publishDir "${params.dir}"
   
   input:
@@ -550,8 +546,6 @@ if ( params.microexons ) {
 }
 
 process mergeGFFzeta {
-  afterScript 'rm -rf /tmp/nxf*'
-
   publishDir "${params.dir}"
   
   input:
