@@ -180,6 +180,7 @@ process sjcount {
   afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
+  storeDir "/gpfs/commons/home/jeinson/nf-testing/data/A01"
 
   input:
   set id, file(bam), readType, readStrand, readLength from bamsWreadLength
