@@ -14,12 +14,14 @@ class IPSA {
 	* 2. path
 	* 3. read type
 	* 4. read strand
+	* 5. read length (added by JE)
 	*/
 	class Fields {
 		static final int ID          = 0
 		static final int PATH        = 1
 		static final int READ_TYPE   = 2
 		static final int READ_STRAND = 3
+		static final int READ_LENGTH = 4
 	}
 
 	/**
@@ -33,7 +35,8 @@ class IPSA {
 		  def path = resolveFile(list[Fields.PATH], f)
 		  def readType = list[Fields.READ_TYPE]
 		  def readStrand = list[Fields.READ_STRAND]
-		  bams << [ id, path, readType, readStrand ]
+		  def readLength = list[Fields.READ_LENGTH]
+		  bams << [ id, path, readType, readStrand, readLength ]
 		}
 		return bams
 	}

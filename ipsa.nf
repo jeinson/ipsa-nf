@@ -160,23 +160,23 @@ if (params.annot =~ /.g[tf]f$/) {
 
 Channel
   .from(IPSA.parseIndexFile(file(params.index)))
-  .set { bams } 
+  .set { bamsWreadLength } 
 
-process preprocBams {
-  afterScript 'rm -rf /tmp/nxf*'
+// process preprocBams {
+//   afterScript 'rm -rf /tmp/nxf*'
 
-  input:
-  set id, file(bam), readType, readStrand from bams
+//   input:
+//   set id, file(bam), readType, readStrand from bams
 
-  output:
-  set id, file(bam), readType, readStrand, stdout into bamsWreadLength
+//   output:
+//   set id, file(bam), readType, readStrand, stdout into bamsWreadLength
 
-  script:
-  prefix = bam.name.replace(/.bam/,'')
-  """
-  samtools view -F4 ${bam} | head -1 | awk '\$0=length(\$10)' | tr -d '\\n'
-  """
-}
+//   script:
+//   prefix = bam.name.replace(/.bam/,'')
+//   """
+//   samtools view -F4 ${bam} | head -1 | awk '\$0=length(\$10)' | tr -d '\\n'
+//   """
+// }
 
 process sjcount {
   afterScript 'rm -rf /tmp/nxf*'
