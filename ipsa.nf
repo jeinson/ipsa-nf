@@ -30,6 +30,7 @@ params.index = "${baseDir}/data/index.tsv"
 params.genome = "${baseDir}/data/genome.fa"
 params.annot = "${baseDir}/data/annotation.gtf"
 params.features = 'cosi, cosi3, cosi5, cosit, psi, psi3, psi5, psit, exc, inc, ret'
+params.sjcountdir = ""
 
 // parameters
 params.merge = "all"
@@ -182,7 +183,7 @@ process sjcount {
 
   publishDir "${params.dir}/${endpoint}"
   
-  if(params.sjcountdir){
+  if(params.sjcountdir != ""){
     storeDir params.sjcountdir
   }
   
