@@ -87,6 +87,7 @@ log.info "Index file                         : ${params.index}"
 log.info "Genome                             : ${params.genome}"
 log.info "Annotation                         : ${params.annot}"
 log.info "Merge output name                  : ${params.merge}"
+log.info "Precomputed SJ Counts Directory  (optional)  : ${params.sjcountdir}"
 log.info "Merged features                    : ${params.features}"
 log.info "Output dir                         : ${params.dir}"
 log.info "Sjcount parameters                 : ${params.sjcountParams ?: '-'}"
@@ -180,7 +181,11 @@ process sjcount {
   afterScript 'rm -rf /tmp/nxf*'
 
   publishDir "${params.dir}/${endpoint}"
-  storeDir "/gpfs/commons/home/jeinson/nf-testing/data/A01"
+  
+  if(params.sjcountdir){
+    storeDir params.sjcountdir
+  }
+  
 
   input:
   set id, file(bam), readType, readStrand, readLength from bamsWreadLength
