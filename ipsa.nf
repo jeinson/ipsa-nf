@@ -192,9 +192,11 @@ process sjcount {
   set id, file(bam), readType, readStrand, readLength from bamsWreadLength
 
   output:
-  set id, file("${prefix}.ssc.tsv"), readLength into A01ssc
-  set id, file("${prefix}.ssj.tsv"), readLength into A01ssj
-  set id, file("${prefix}.ssj.tsv") into A01mex
+  // set id, file("${prefix}.ssc.tsv"), readLength into A01ssc
+  // set id, file("${prefix}.ssj.tsv"), readLength into A01ssj
+  // set id, file("${prefix}.ssj.tsv") into A01mex
+  file "${prefix}.ssc.tsv.gz"
+  file "${prefix}.ssj.tsv.gz"
 
   script:
   endpoint = 'A01'
@@ -221,415 +223,417 @@ process sjcount {
           -nbins ${readLength} \
           ${strandParams} \
           ${params.sjcountParams ?: ''} \
-          -quiet
+          -quiet;
+  gzip ${prefix}.ssc.tsv;
+  gzip ${prefix}.ssj.tsv;
   """
 }
 
-process aggregateSSC {
+// process aggregateSSC {
   
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(tsv), readLength from A01ssc
+//   input:
+//   set id, file(tsv), readLength from A01ssc
 
-  output:
-  set id, file("${prefix}.tsv") into sscA02
+//   output:
+//   set id, file("${prefix}.tsv") into sscA02
 
-  script:
-  degree = 0
-  endpoint = 'A02'
-  prefix = "${id}.${endpoint}.ssc"
-  """
-  aggregate.awk -v degree=${degree} -v readLength=${readLength} -v margin=${params.margin} -v prefix= -v logfile=${prefix}.log ${tsv} > ${prefix}.tsv
-  """
-}
+//   script:
+//   degree = 0
+//   endpoint = 'A02'
+//   prefix = "${id}.${endpoint}.ssc"
+//   """
+//   aggregate.awk -v degree=${degree} -v readLength=${readLength} -v margin=${params.margin} -v prefix= -v logfile=${prefix}.log ${tsv} > ${prefix}.tsv
+//   """
+// }
 
-process aggregateSSJ {
+// process aggregateSSJ {
   
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(tsv), readLength from A01ssj
+//   input:
+//   set id, file(tsv), readLength from A01ssj
 
-  output:
-  set id, file("${prefix}.tsv") into ssjA02
+//   output:
+//   set id, file("${prefix}.tsv") into ssjA02
 
-  script:
-  degree = 1
-  endpoint = 'A02'
-  prefix = "${id}.${endpoint}.ssj"
-  """
-  aggregate.awk -v degree=${degree} -v readLength=${readLength} -v margin=${params.margin} -v prefix= -v logfile=${prefix}.log ${tsv} > ${prefix}.tsv
-  """
-}
+//   script:
+//   degree = 1
+//   endpoint = 'A02'
+//   prefix = "${id}.${endpoint}.ssj"
+//   """
+//   aggregate.awk -v degree=${degree} -v readLength=${readLength} -v margin=${params.margin} -v prefix= -v logfile=${prefix}.log ${tsv} > ${prefix}.tsv
+//   """
+// }
 
-process aggregateMex {
+// process aggregateMex {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(tsv) from A01mex
+//   input:
+//   set id, file(tsv) from A01mex
 
-  when:
-  params.microexons
+//   when:
+//   params.microexons
 
-  output:
-  set id, file("${prefix}.tsv") into D01
+//   output:
+//   set id, file("${prefix}.tsv") into D01
 
-  script:
-  degree = 2
-  endpoint = 'D01'
-  prefix = tsv.name.replace(/.tsv/,'').replace(/A01.ssj/,'D01')
-  """
-  aggregate.awk -v degree=${degree} -v logfile=${prefix}.log ${tsv} > ${prefix}.tsv
-  """
-}
+//   script:
+//   degree = 2
+//   endpoint = 'D01'
+//   prefix = tsv.name.replace(/.tsv/,'').replace(/A01.ssj/,'D01')
+//   """
+//   aggregate.awk -v degree=${degree} -v logfile=${prefix}.log ${tsv} > ${prefix}.tsv
+//   """
+// }
 
-process annotate {
+// process annotate {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set file(genomeDBX), file(genomeIDX) from genomeIdx
-  file annotation from txIdxAnnotate
-  set id, file(ssj) from ssjA02
+//   input:
+//   set file(genomeDBX), file(genomeIDX) from genomeIdx
+//   file annotation from txIdxAnnotate
+//   set id, file(ssj) from ssjA02
 
-  output:
-  set id, file("${prefix}.tsv") into A03
+//   output:
+//   set id, file("${prefix}.tsv") into A03
 
-  script:
-  endpoint = 'A03'
-  prefix = "${id}.${endpoint}.ssj"
-  """
-  annotate.pl -annot ${annotation} -dbx ${genomeDBX} -idx ${genomeIDX} -deltaSS ${params.deltaSS} -in ${ssj} > ${prefix}.tsv
-  """
-}
+//   script:
+//   endpoint = 'A03'
+//   prefix = "${id}.${endpoint}.ssj"
+//   """
+//   annotate.pl -annot ${annotation} -dbx ${genomeDBX} -idx ${genomeIDX} -deltaSS ${params.deltaSS} -in ${ssj} > ${prefix}.tsv
+//   """
+// }
 
-process chooseStrand {
+// process chooseStrand {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(ssj) from A03
+//   input:
+//   set id, file(ssj) from A03
 
-  output:
-  set id, file("${prefix}.tsv") into ssjA04, ssj4constrain, ssj4constrainMult
+//   output:
+//   set id, file("${prefix}.tsv") into ssjA04, ssj4constrain, ssj4constrainMult
 
-  script:
-  endpoint = 'A04'
-  prefix = "${id}.${endpoint}.ssj"
-  """
-  choose_strand.awk ${ssj} > ${prefix}.tsv
-  """
-}
+//   script:
+//   endpoint = 'A04'
+//   prefix = "${id}.${endpoint}.ssj"
+//   """
+//   choose_strand.awk ${ssj} > ${prefix}.tsv
+//   """
+// }
 
-ssj4constrain.combine(sscA02, by: 0)
-  .map { 
-    [it[0]] + it[1..-1].sort { it.baseName }
-  }.set{ constrain }
+// ssj4constrain.combine(sscA02, by: 0)
+//   .map { 
+//     [it[0]] + it[1..-1].sort { it.baseName }
+//   }.set{ constrain }
 
-if ( params.microexons ) {
-  ssj4constrainMult.combine(D01, by: 0)
-    .map { 
-      [it[0]] + it[1..-1].sort { it.baseName }
-    }.set { constrainMult }
-} else {
-  Channel.empty()
-    .set { constrainMult }
-}
+// if ( params.microexons ) {
+//   ssj4constrainMult.combine(D01, by: 0)
+//     .map { 
+//       [it[0]] + it[1..-1].sort { it.baseName }
+//     }.set { constrainMult }
+// } else {
+//   Channel.empty()
+//     .set { constrainMult }
+// }
 
-process constrainSSC {
+// process constrainSSC {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(ssc), file(ssj) from constrain
+//   input:
+//   set id, file(ssc), file(ssj) from constrain
 
-  output:
-  set id, file("${prefix}.tsv") into sscA04
+//   output:
+//   set id, file("${prefix}.tsv") into sscA04
 
-  script:
-  endpoint = 'A04'
-  prefix = "${id}.${endpoint}.ssc"
-  """
-  constrain_ssc.awk -v jncfile=${ssj} ${ssc} > ${prefix}.tsv
-  """
-}
+//   script:
+//   endpoint = 'A04'
+//   prefix = "${id}.${endpoint}.ssc"
+//   """
+//   constrain_ssc.awk -v jncfile=${ssj} ${ssc} > ${prefix}.tsv
+//   """
+// }
 
-process constrainMex {
+// process constrainMex {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(ssj), file(ssjMex) from constrainMult
+//   input:
+//   set id, file(ssj), file(ssjMex) from constrainMult
 
-  output:
-  set id, file("${prefix}.tsv") into D02
+//   output:
+//   set id, file("${prefix}.tsv") into D02
 
-  script:
-  endpoint = 'D02'
-  prefix = "${id}.${endpoint}"
-  """
-  constrain_mex.awk -v jncfile=${ssj} ${ssjMex} > ${prefix}.tsv
-  """
-}
+//   script:
+//   endpoint = 'D02'
+//   prefix = "${id}.${endpoint}"
+//   """
+//   constrain_mex.awk -v jncfile=${ssj} ${ssjMex} > ${prefix}.tsv
+//   """
+// }
 
-process extractMex {
+// process extractMex {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(ssjMex) from D02
+//   input:
+//   set id, file(ssjMex) from D02
 
-  output:
-  set id, file("${prefix}.tsv") into D06
+//   output:
+//   set id, file("${prefix}.tsv") into D06
 
-  script:
-  endpoint = 'D06'
-  prefix = "${id}.${endpoint}"
-  """
-  extract_mex.awk ${ssjMex} > ${prefix}.tsv 
-  """
-}
+//   script:
+//   endpoint = 'D06'
+//   prefix = "${id}.${endpoint}"
+//   """
+//   extract_mex.awk ${ssjMex} > ${prefix}.tsv 
+//   """
+// }
 
-process sscA06 {
+// process sscA06 {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(ssc) from sscA04
+//   input:
+//   set id, file(ssc) from sscA04
 
-  output:
-  file "${prefix}.tsv" into sscA06
-  set id, file("${prefix}.tsv") into ssc4merge, ssc4allA06
+//   output:
+//   file "${prefix}.tsv" into sscA06
+//   set id, file("${prefix}.tsv") into ssc4merge, ssc4allA06
 
-  script:
-  endpoint = 'A06'
-  prefix = "${id}.${endpoint}.ssc"
-  """
-  awk '\$4>=${params.entropy}' ${ssc} > ${prefix}.tsv
-  """
-}
+//   script:
+//   endpoint = 'A06'
+//   prefix = "${id}.${endpoint}.ssc"
+//   """
+//   awk '\$4>=${params.entropy}' ${ssc} > ${prefix}.tsv
+//   """
+// }
 
-process ssjA06 {
+// process ssjA06 {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  set id, file(ssj) from ssjA04
+//   input:
+//   set id, file(ssj) from ssjA04
 
-  output:
-  file "${prefix}.tsv" into ssjA06, ssj4gffA06
-  set id, file("${prefix}.tsv") into ssj4merge, ssj4allA06, ssj4psicasA06
+//   output:
+//   file "${prefix}.tsv" into ssjA06, ssj4gffA06
+//   set id, file("${prefix}.tsv") into ssj4merge, ssj4allA06, ssj4psicasA06
 
-  script:
-  endpoint = 'A06'
-  prefix = "${id}.${endpoint}.ssj"
-  """
-  awk '\$4>=${params.entropy} && \$5>=${params.status}' ${ssj} > ${prefix}.tsv
-  """
-}
+//   script:
+//   endpoint = 'A06'
+//   prefix = "${id}.${endpoint}.ssj"
+//   """
+//   awk '\$4>=${params.entropy} && \$5>=${params.status}' ${ssj} > ${prefix}.tsv
+//   """
+// }
 
-ssj4merge.toSortedList { a,b -> a[0] <=> b[0] }
-  .map { list ->
-    ids = []
-    ssjs = []
-    list.each { ids << it[0]; ssjs << it[1] }
-    [ids, ssjs]
-  }.set { ssj4mergeSplit }
+// ssj4merge.toSortedList { a,b -> a[0] <=> b[0] }
+//   .map { list ->
+//     ids = []
+//     ssjs = []
+//     list.each { ids << it[0]; ssjs << it[1] }
+//     [ids, ssjs]
+//   }.set { ssj4mergeSplit }
 
-ssc4merge.toSortedList { a,b -> a[0] <=> b[0] }
-  .map { list ->
-    ids = []
-    sscs = []
-    list.each { ids << it[0]; sscs << it[1] }
-    [ids, sscs]
-  }.set { ssc4mergeSplit }
+// ssc4merge.toSortedList { a,b -> a[0] <=> b[0] }
+//   .map { list ->
+//     ids = []
+//     sscs = []
+//     list.each { ids << it[0]; sscs << it[1] }
+//     [ids, sscs]
+//   }.set { ssc4mergeSplit }
 
-if ( params.microexons ) {
-  ssj4allA06.combine(ssc4allA06, by: 0).combine(D06, by: 0)
-    .map {
-      [it[0]] + it[1..-1].sort { it.baseName }
-    }.set { allMex }
-  Channel.empty().set { allA06 }
-} else {
-  ssj4allA06.combine(ssc4allA06, by: 0)
-    .map {
-      [it[0]] + it[1..-1].sort { it.baseName }
-    }.set { allA06 }
-  Channel.empty().set { allMex }
-}
+// if ( params.microexons ) {
+//   ssj4allA06.combine(ssc4allA06, by: 0).combine(D06, by: 0)
+//     .map {
+//       [it[0]] + it[1..-1].sort { it.baseName }
+//     }.set { allMex }
+//   Channel.empty().set { allA06 }
+// } else {
+//   ssj4allA06.combine(ssc4allA06, by: 0)
+//     .map {
+//       [it[0]] + it[1..-1].sort { it.baseName }
+//     }.set { allA06 }
+//   Channel.empty().set { allMex }
+// }
 
-process mergeTsvSSJ {
-  afterScript 'rm -rf /tmp/nxf*'
+// process mergeTsvSSJ {
+//   afterScript 'rm -rf /tmp/nxf*'
 
-  publishDir "${params.dir}"
+//   publishDir "${params.dir}"
   
-  input:
-  set ids, file(ssjs) from ssj4mergeSplit
+//   input:
+//   set ids, file(ssjs) from ssj4mergeSplit
 
-  output:
-  file "${prefix}.tsv"
+//   output:
+//   file "${prefix}.tsv"
 
-  shell:
-  by = 1
-  val = 2
-  sep = '_'
-  input = [ssjs.toList(), ids].transpose().flatten().collect { "'$it'" }.join(',')
-  prefix = "${params.merge}.counts.ssj"
-  template 'merge_tsv.pl'
-}
+//   shell:
+//   by = 1
+//   val = 2
+//   sep = '_'
+//   input = [ssjs.toList(), ids].transpose().flatten().collect { "'$it'" }.join(',')
+//   prefix = "${params.merge}.counts.ssj"
+//   template 'merge_tsv.pl'
+// }
 
-process mergeTsvSSC {
-  afterScript 'rm -rf /tmp/nxf*'
+// process mergeTsvSSC {
+//   afterScript 'rm -rf /tmp/nxf*'
 
-  publishDir "${params.dir}"
+//   publishDir "${params.dir}"
   
-  input:
-  set ids, file(sscs) from ssc4mergeSplit
+//   input:
+//   set ids, file(sscs) from ssc4mergeSplit
 
-  output:
-  file "${prefix}.tsv"
+//   output:
+//   file "${prefix}.tsv"
 
-  shell:
-  by = 1
-  val = 2
-  sep = '_'
-  input = [sscs.toList(), ids].transpose().flatten().collect { "'$it'" }.join(',')
-  prefix = "${params.merge}.counts.ssc"
-  template 'merge_tsv.pl'
-}
+//   shell:
+//   by = 1
+//   val = 2
+//   sep = '_'
+//   input = [sscs.toList(), ids].transpose().flatten().collect { "'$it'" }.join(',')
+//   prefix = "${params.merge}.counts.ssc"
+//   template 'merge_tsv.pl'
+// }
 
-process zeta {
+// process zeta {
   
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  file annotation from txIdxZeta
-  set id, file(ssc), file(ssj) from allA06
+//   input:
+//   file annotation from txIdxZeta
+//   set id, file(ssc), file(ssj) from allA06
 
-  output:
-  set id, file("${prefix}.gff") into A07
+//   output:
+//   set id, file("${prefix}.gff") into A07
 
-  script:
-  endpoint = 'A07'
-  prefix = ssj.name.replace(/.tsv/,'').replace(/A06.ssj/, endpoint)
-  """
-  zeta.pl -annot ${annotation} -ssc ${ssc} -ssj ${ssj} -mincount ${params.mincount} > ${prefix}.gff 
-  """
-}
+//   script:
+//   endpoint = 'A07'
+//   prefix = ssj.name.replace(/.tsv/,'').replace(/A06.ssj/, endpoint)
+//   """
+//   zeta.pl -annot ${annotation} -ssc ${ssc} -ssj ${ssj} -mincount ${params.mincount} > ${prefix}.gff 
+//   """
+// }
 
-process zetaMex {
+// process zetaMex {
   
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  file annotation from txIdxZetaMex
-  set id, file(ssc), file(ssj), file(exons) from allMex
+//   input:
+//   file annotation from txIdxZetaMex
+//   set id, file(ssc), file(ssj), file(exons) from allMex
 
-  output:
-  set id, file("${prefix}.gff") into A07mex
+//   output:
+//   set id, file("${prefix}.gff") into A07mex
 
-  script:
-  endpoint = 'A07'
-  prefix = ssj.name.replace(/.tsv/,'').replace(/A06.ssj/, endpoint)
-  """
-  zeta.pl -annot ${annotation} -ssc ${ssc} -ssj ${ssj} -exons ${exons} -mincount ${params.mincount} > ${prefix}.gff 
-  """
-}
+//   script:
+//   endpoint = 'A07'
+//   prefix = ssj.name.replace(/.tsv/,'').replace(/A06.ssj/, endpoint)
+//   """
+//   zeta.pl -annot ${annotation} -ssc ${ssc} -ssj ${ssj} -exons ${exons} -mincount ${params.mincount} > ${prefix}.gff 
+//   """
+// }
 
-if ( params.microexons ) {
-  A07mex.toSortedList { a,b -> a[0] <=> b[0] }
-    .map { list ->
-      ids = []
-      gffs = []
-      list.each { ids << it[0]; gffs << it[1] }
-      [ids, gffs]
-    }.set { A074merge }
-} else {
-  A07.toSortedList { a,b -> a[0] <=> b[0] }
-    .map { list ->
-      ids = []
-      gffs = []
-      list.each { ids << it[0]; gffs << it[1] }
-      [ids, gffs]
-    }.set { A074merge }
-}
+// if ( params.microexons ) {
+//   A07mex.toSortedList { a,b -> a[0] <=> b[0] }
+//     .map { list ->
+//       ids = []
+//       gffs = []
+//       list.each { ids << it[0]; gffs << it[1] }
+//       [ids, gffs]
+//     }.set { A074merge }
+// } else {
+//   A07.toSortedList { a,b -> a[0] <=> b[0] }
+//     .map { list ->
+//       ids = []
+//       gffs = []
+//       list.each { ids << it[0]; gffs << it[1] }
+//       [ids, gffs]
+//     }.set { A074merge }
+// }
 
-process mergeGFFzeta {
-  afterScript 'rm -rf /tmp/nxf*'
+// process mergeGFFzeta {
+//   afterScript 'rm -rf /tmp/nxf*'
 
-  publishDir "${params.dir}"
+//   publishDir "${params.dir}"
   
-  input:
-  each feature from features
-  set ids, file(sscs) from A074merge
+//   input:
+//   each feature from features
+//   set ids, file(sscs) from A074merge
 
-  output:
-  file "${prefix}.tsv"
+//   output:
+//   file "${prefix}.tsv"
 
-  shell:
-  prefix = "${params.merge}.A.${feature}"
-  input = [sscs.toList(), ids].transpose().flatten().collect { "'$it'" }.join(',')
-  output = "'${feature}', '${prefix}.tsv'"
-  percent = 0.25
-  transf = 'log'
-  template 'merge_gff.pl'
-}
+//   shell:
+//   prefix = "${params.merge}.A.${feature}"
+//   input = [sscs.toList(), ids].transpose().flatten().collect { "'$it'" }.join(',')
+//   output = "'${feature}', '${prefix}.tsv'"
+//   percent = 0.25
+//   transf = 'log'
+//   template 'merge_gff.pl'
+// }
 
-process ssjTsv2bed {
+// process ssjTsv2bed {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  file ssj from ssjA06
+//   input:
+//   file ssj from ssjA06
 
-  output:
-  file "${prefix}.bed" into E06
+//   output:
+//   file "${prefix}.bed" into E06
 
-  script:
-  endpoint = 'E06'
-  prefix = ssj.name.replace(/.tsv/,'').replace(/A06/, endpoint)
-  """
-  tsv2bed.pl < ${ssj} -extra 2,3,4,5,6,7 > ${prefix}.bed
-  """
-}
+//   script:
+//   endpoint = 'E06'
+//   prefix = ssj.name.replace(/.tsv/,'').replace(/A06/, endpoint)
+//   """
+//   tsv2bed.pl < ${ssj} -extra 2,3,4,5,6,7 > ${prefix}.bed
+//   """
+// }
 
-process sscTsv2bed {
+// process sscTsv2bed {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  file ssc from sscA06
+//   input:
+//   file ssc from sscA06
 
-  output:
-  file "${prefix}.bed" into E06ssc
+//   output:
+//   file "${prefix}.bed" into E06ssc
 
-  script:
-  endpoint = 'E06'
-  prefix = ssc.name.replace(/.tsv/,'').replace(/A06/, endpoint)
-  """
-  tsv2bed.pl < ${ssc} -extra 2 -ssc > ${prefix}.bed
-  """
-}
+//   script:
+//   endpoint = 'E06'
+//   prefix = ssc.name.replace(/.tsv/,'').replace(/A06/, endpoint)
+//   """
+//   tsv2bed.pl < ${ssc} -extra 2 -ssc > ${prefix}.bed
+//   """
+// }
 
-process tsv2gff {
+// process tsv2gff {
 
-  publishDir "${params.dir}/${endpoint}"
+//   publishDir "${params.dir}/${endpoint}"
 
-  input:
-  file ssj from ssj4gffA06
+//   input:
+//   file ssj from ssj4gffA06
 
-  output:
-  file "${prefix}.gff" into E06ssj
+//   output:
+//   file "${prefix}.gff" into E06ssj
 
-  script:
-  endpoint = 'E06'
-  prefix = ssj.name.replace(/.tsv/,'').replace(/A06/, endpoint)
-  """
-  tsv2gff.pl < ${ssj} -o count 2 -o stagg 3 -o entr 4 -o annot 5 -o nucl 6 -o IDR 7 > ${prefix}.gff
-  """
-}
+//   script:
+//   endpoint = 'E06'
+//   prefix = ssj.name.replace(/.tsv/,'').replace(/A06/, endpoint)
+//   """
+//   tsv2gff.pl < ${ssj} -o count 2 -o stagg 3 -o entr 4 -o annot 5 -o nucl 6 -o IDR 7 > ${prefix}.gff
+//   """
+// }
 
 workflow.onComplete {
     log.info """
